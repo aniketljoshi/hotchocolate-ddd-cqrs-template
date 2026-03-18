@@ -14,13 +14,12 @@ The template exports traces to Jaeger through OTLP when `OpenTelemetry:Enabled` 
 ## Local setup
 
 ```bash
-docker compose up -d
-dotnet run --project src/Api
+docker compose up --build -d
 ```
 
 Open Jaeger at [http://localhost:16686](http://localhost:16686).
 
-The development profile points OTLP to `http://localhost:4317`.
+The Compose stack exports OTLP traces to Jaeger and seeds local sample data automatically in Development.
 The local PostgreSQL container is exposed on `localhost:55432`.
 
 ## Expected trace shape

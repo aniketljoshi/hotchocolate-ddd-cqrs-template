@@ -1,6 +1,6 @@
 param(
     [string]$RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
-    [string]$ApiUrl = "http://localhost:5167",
+    [string]$ApiUrl = "http://localhost:5159",
     [string]$JaegerUrl = "http://localhost:16686",
     [string]$ChromePath = "C:\Program Files\Google\Chrome\Application\chrome.exe",
     [string]$ScreenshotRelativePath = "docs\assets\jaeger-trace.png"
@@ -13,9 +13,7 @@ $graphqlUrl = "$ApiUrl/graphql"
 $jaegerApiUrl = "$JaegerUrl/api/traces?service=HotChocolateDddCqrsTemplate&limit=20&lookback=1h"
 $screenshotPath = Join-Path $RepositoryRoot $ScreenshotRelativePath
 $artifactsDir = Join-Path $RepositoryRoot "artifacts"
-$stdoutLog = Join-Path $artifactsDir "jaeger-api.stdout.log"
-$stderrLog = Join-Path $artifactsDir "jaeger-api.stderr.log"
-$apiProcess = $null
+$seedCategoryId = "820b63b4-ec53-4f06-9871-57d9bf14bb51"
 
 function Wait-UntilHealthy {
     param(
@@ -56,9 +54,8 @@ function Wait-ForHttpOk {
         Start-Sleep -Seconds 2
     }
 
-    $stdout = if (Test-Path $stdoutLog) { Get-Content $stdoutLog -Raw } else { "" }
-    $stderr = if (Test-Path $stderrLog) { Get-Content $stderrLog -Raw } else { "" }
-    throw "API did not become ready at $Url.`nStdout:`n$stdout`nStderr:`n$stderr"
+    $logs = docker compose logs api --no-color
+    throw "API did not become ready at $Url.`nDocker logs:`n$logs"
 }
 
 function Get-TraceId {
@@ -81,9 +78,8 @@ function Get-TraceId {
         Start-Sleep -Seconds 2
     }
 
-    $stdout = if (Test-Path $stdoutLog) { Get-Content $stdoutLog -Raw } else { "" }
-    $stderr = if (Test-Path $stderrLog) { Get-Content $stderrLog -Raw } else { "" }
-    throw "No Jaeger trace containing graphql.mutation.createProduct was found.`nStdout:`n$stdout`nStderr:`n$stderr"
+    $logs = docker compose logs api --no-color
+    throw "No Jaeger trace containing graphql.mutation.createProduct was found.`nDocker logs:`n$logs"
 }
 
 function Invoke-GraphQlMutation {
@@ -128,25 +124,6 @@ mutation($input: CreateProductInput!) {
     }
 }
 
-function Ensure-Category {
-    $categoryId = [Guid]::NewGuid().ToString()
-    $sqlFile = Join-Path $artifactsDir "seed-category.sql"
-    $sql = @"
-insert into categories ("Id", "Name", "Slug")
-values ('$categoryId', 'Telemetry', 'telemetry')
-on conflict do nothing;
-"@
-
-    Set-Content -Path $sqlFile -Value $sql -NoNewline
-    Get-Content $sqlFile | docker exec -i hc-ddd-template-postgres psql -U postgres -d hotchocolate_template | Out-Host
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to insert a seed category for the Jaeger trace capture."
-    }
-
-    return $categoryId
-}
-
 try {
     if (-not (Test-Path $ChromePath)) {
         throw "Chrome executable was not found at '$ChromePath'."
@@ -156,24 +133,13 @@ try {
     New-Item -ItemType Directory -Force -Path (Split-Path $screenshotPath -Parent) | Out-Null
 
     docker compose down -v | Out-Host
-    docker compose up -d | Out-Host
+    docker compose up --build -d | Out-Host
 
     Wait-UntilHealthy -ContainerName "hc-ddd-template-postgres"
 
-    $env:ASPNETCORE_ENVIRONMENT = "Development"
-    $env:ASPNETCORE_URLS = $ApiUrl
-
-    $apiProcess = Start-Process dotnet `
-        -ArgumentList "run", "--project", "src/Api", "--no-launch-profile" `
-        -WorkingDirectory $RepositoryRoot `
-        -RedirectStandardOutput $stdoutLog `
-        -RedirectStandardError $stderrLog `
-        -PassThru
-
     Wait-ForHttpOk -Url $sdlUrl
 
-    $categoryId = Ensure-Category
-    Invoke-GraphQlMutation -CategoryId $categoryId
+    Invoke-GraphQlMutation -CategoryId $seedCategoryId
 
     Start-Sleep -Seconds 8
 
@@ -196,9 +162,5 @@ try {
     Write-Host "Captured Jaeger trace screenshot at $screenshotPath"
 }
 finally {
-    if ($apiProcess -and -not $apiProcess.HasExited) {
-        Stop-Process -Id $apiProcess.Id -Force
-    }
-
     docker compose down -v | Out-Host
 }
