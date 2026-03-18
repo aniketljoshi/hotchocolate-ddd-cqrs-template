@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <PackageType>Template</PackageType>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <PackageId>AniketJoshi.HotChocolateDdd.Template</PackageId>
+    <Title>HotChocolate DDD CQRS Template</Title>
+    <Authors>Aniket Joshi</Authors>
+    <Description>Production-leaning .NET 10 template with HotChocolate v15, DDD, CQRS, MediatR, and an outbox-backed domain event pipeline.</Description>
+    <PackageTags>dotnet-new;template;dotnet10;graphql;hotchocolate;ddd;cqrs;mediatr;outbox-pattern</PackageTags>
+    <PackageVersion>0.1.0-local</PackageVersion>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/aniketjoshi9999/hotchocolate-ddd-cqrs-template</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/aniketjoshi9999/hotchocolate-ddd-cqrs-template</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="**\*"
+             Exclude=".git\**;.vs\**;artifacts\**;**\bin\**;**\obj\**;*.nupkg;*.snupkg;HotChocolateDddCqrsTemplate.TemplatePack.csproj">
+      <Pack>true</Pack>
+      <PackagePath>content\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

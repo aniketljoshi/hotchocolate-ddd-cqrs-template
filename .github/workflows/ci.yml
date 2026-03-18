@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+
+      - name: Restore
+        run: dotnet restore HotChocolateDddCqrsTemplate.sln
+
+      - name: Build
+        run: dotnet build HotChocolateDddCqrsTemplate.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test HotChocolateDddCqrsTemplate.sln --configuration Release --no-build
+
+      - name: Pack template
+        run: dotnet pack HotChocolateDddCqrsTemplate.TemplatePack.csproj --configuration Release -o artifacts /p:PackageVersion=0.0.0-ci.${{ github.run_number }}
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-package
+          path: artifacts/*.nupkg
