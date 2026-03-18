@@ -1,4 +1,24 @@
 services:
+  api:
+    container_name: hc-ddd-template-api
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__CatalogDb: Host=postgres;Port=5432;Database=hotchocolate_template;Username=postgres;Password=postgres
+      OpenTelemetry__Enabled: "true"
+      OpenTelemetry__OtlpEndpoint: http://jaeger:4317
+      SampleData__Enabled: "true"
+    ports:
+      - "5159:8080"
+
   postgres:
     image: postgres:17-alpine
     container_name: hc-ddd-template-postgres
@@ -7,7 +27,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: hotchocolate_template
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,7 +37,7 @@ services:
       retries: 5
 
   jaeger:
-    image: jaegertracing/all-in-one:1.66
+    image: jaegertracing/all-in-one:1.67.0
     container_name: hc-ddd-template-jaeger
     ports:
       - "16686:16686"

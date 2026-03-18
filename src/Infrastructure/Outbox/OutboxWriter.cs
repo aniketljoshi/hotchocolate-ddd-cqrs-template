@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using HotChocolateDddCqrsTemplate.Application.Common.Interfaces;
 using HotChocolateDddCqrsTemplate.Domain.Common;
@@ -38,6 +39,7 @@ public sealed class OutboxWriter(ApplicationDbContext dbContext) : IOutboxWriter
         return OutboxMessage.Create(
             domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
             JsonSerializer.Serialize(domainEvent, domainEvent.GetType(), SerializerOptions),
-            domainEvent.OccurredOnUtc);
+            domainEvent.OccurredOnUtc,
+            Activity.Current?.Context);
     }
 }

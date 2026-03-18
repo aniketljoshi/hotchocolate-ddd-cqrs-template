@@ -1,0 +1,7 @@
+.git
+.github
+.vs
+artifacts
+SampleService
+**/bin
+**/obj

@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Text.Json;
 using HotChocolateDddCqrsTemplate.Application.Catalog.Notifications;
+using HotChocolateDddCqrsTemplate.Application.Common.Observability;
 using HotChocolateDddCqrsTemplate.Domain.Catalog.Events;
 using HotChocolateDddCqrsTemplate.Infrastructure.Persistence;
 using MediatR;
@@ -35,6 +37,10 @@ public sealed class OutboxProcessor(
 
     private async Task ProcessPendingMessagesAsync(CancellationToken cancellationToken)
     {
+        using var batchActivity = TemplateTelemetry.InfrastructureActivitySource.StartActivity(
+            "outbox.poll",
+            ActivityKind.Consumer);
+
         using var scope = serviceScopeFactory.CreateScope();
 
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -53,6 +59,18 @@ public sealed class OutboxProcessor(
 
         foreach (var message in messages)
         {
+            using var messageActivity = message.TryGetParentContext(out var parentContext)
+                ? TemplateTelemetry.InfrastructureActivitySource.StartActivity(
+                    "outbox.process_message",
+                    ActivityKind.Consumer,
+                    parentContext)
+                : TemplateTelemetry.InfrastructureActivitySource.StartActivity(
+                    "outbox.process_message",
+                    ActivityKind.Consumer);
+
+            messageActivity?.SetTag("outbox.message_id", message.Id);
+            messageActivity?.SetTag("outbox.message_type", message.Type);
+
             try
             {
                 var notification = DeserializeNotification(message);
@@ -65,10 +83,13 @@ public sealed class OutboxProcessor(
 
                 await publisher.Publish(notification, cancellationToken);
                 message.MarkProcessed(DateTime.UtcNow);
+                messageActivity?.SetTag("outbox.status", "processed");
             }
             catch (Exception exception)
             {
                 message.MarkFailed(exception.Message);
+                messageActivity?.SetTag("outbox.status", "failed");
+                messageActivity?.SetTag("outbox.error", exception.Message);
                 logger.LogError(exception, "Failed to process outbox message {OutboxMessageId}", message.Id);
             }
         }

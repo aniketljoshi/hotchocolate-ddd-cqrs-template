@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using HotChocolateDddCqrsTemplate.Application.Common.Observability;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -15,9 +16,17 @@ public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<TRequest> logge
     {
         logger.LogInformation("Handling {RequestName}", typeof(TRequest).Name);
 
+        using var activity = TemplateTelemetry.ApplicationActivitySource.StartActivity(
+            $"{typeof(TRequest).Name}.handle",
+            ActivityKind.Internal);
+
+        activity?.SetTag("request.type", typeof(TRequest).FullName);
+
         var stopwatch = Stopwatch.StartNew();
         var response = await next();
         stopwatch.Stop();
+
+        activity?.SetTag("request.elapsed_ms", stopwatch.ElapsedMilliseconds);
 
         logger.LogInformation(
             "Handled {RequestName} in {ElapsedMilliseconds} ms",

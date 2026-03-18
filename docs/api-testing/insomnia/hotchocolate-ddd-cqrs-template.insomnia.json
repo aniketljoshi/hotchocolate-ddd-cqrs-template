@@ -1,0 +1,190 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-03-18T14:30:00.000Z",
+  "__export_source": "codex.desktop",
+  "resources": [
+    {
+      "_id": "wrk_hc_ddd_template",
+      "_type": "workspace",
+      "name": "HotChocolate DDD CQRS Template",
+      "description": "GraphQL requests for the local Docker Compose stack.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_hc_ddd_template_base",
+      "_type": "environment",
+      "parentId": "wrk_hc_ddd_template",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:5159",
+        "books_category_id": "820b63b4-ec53-4f06-9871-57d9bf14bb51",
+        "courses_category_id": "d8ee54d4-cce8-4948-a0ee-ebea85a34895",
+        "seed_product_id": "4f2bde1d-0f65-488d-bca5-6efc5dd55b0d"
+      }
+    },
+    {
+      "_id": "fld_hc_ddd_template_rest",
+      "_type": "request_group",
+      "parentId": "wrk_hc_ddd_template",
+      "name": "REST Helpers"
+    },
+    {
+      "_id": "fld_hc_ddd_template_queries",
+      "_type": "request_group",
+      "parentId": "wrk_hc_ddd_template",
+      "name": "GraphQL Queries"
+    },
+    {
+      "_id": "fld_hc_ddd_template_mutations",
+      "_type": "request_group",
+      "parentId": "wrk_hc_ddd_template",
+      "name": "GraphQL Mutations"
+    },
+    {
+      "_id": "req_hc_ddd_template_health",
+      "_type": "request",
+      "parentId": "fld_hc_ddd_template_rest",
+      "name": "Health Check",
+      "method": "GET",
+      "url": "{{ _.base_url }}/healthz",
+      "headers": [],
+      "body": {},
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_hc_ddd_template_sdl",
+      "_type": "request",
+      "parentId": "fld_hc_ddd_template_rest",
+      "name": "GraphQL SDL",
+      "method": "GET",
+      "url": "{{ _.base_url }}/graphql?sdl",
+      "headers": [],
+      "body": {},
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_hc_ddd_template_categories",
+      "_type": "request",
+      "parentId": "fld_hc_ddd_template_queries",
+      "name": "List Categories",
+      "method": "POST",
+      "url": "{{ _.base_url }}/graphql",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"query\": \"query ListCategories { categories { id name slug } }\"\n}"
+      },
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_hc_ddd_template_products",
+      "_type": "request",
+      "parentId": "fld_hc_ddd_template_queries",
+      "name": "List Products",
+      "method": "POST",
+      "url": "{{ _.base_url }}/graphql",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"query\": \"query ListProducts($pageNumber: Int!, $pageSize: Int!) { products(pageNumber: $pageNumber, pageSize: $pageSize) { totalCount pageNumber pageSize items { id name price currency sku isArchived category { id name slug } } } }\",\n  \"variables\": {\n    \"pageNumber\": 1,\n    \"pageSize\": 10\n  }\n}"
+      },
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_hc_ddd_template_product_by_id",
+      "_type": "request",
+      "parentId": "fld_hc_ddd_template_queries",
+      "name": "Get Product By Id",
+      "method": "POST",
+      "url": "{{ _.base_url }}/graphql",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"query\": \"query GetProductById($id: UUID!) { productById(id: $id) { id name price currency sku isArchived category { id name slug } } }\",\n  \"variables\": {\n    \"id\": \"{{ _.seed_product_id }}\"\n  }\n}"
+      },
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_hc_ddd_template_create_product",
+      "_type": "request",
+      "parentId": "fld_hc_ddd_template_mutations",
+      "name": "Create Product",
+      "method": "POST",
+      "url": "{{ _.base_url }}/graphql",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"query\": \"mutation CreateProduct($input: CreateProductInput!) { createProduct(input: $input) { product { id name price currency sku category { id name slug } } errors { code message } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Telemetry Starter Kit\",\n      \"price\": 149.0,\n      \"currency\": \"USD\",\n      \"sku\": \"TRACE-1001\",\n      \"categoryId\": \"{{ _.books_category_id }}\"\n    }\n  }\n}"
+      },
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_hc_ddd_template_update_price",
+      "_type": "request",
+      "parentId": "fld_hc_ddd_template_mutations",
+      "name": "Update Product Price",
+      "method": "POST",
+      "url": "{{ _.base_url }}/graphql",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"query\": \"mutation UpdateProductPrice($input: UpdateProductPriceInput!) { updateProductPrice(input: $input) { product { id name price currency sku category { id name slug } } errors { code message } } }\",\n  \"variables\": {\n    \"input\": {\n      \"productId\": \"{{ _.seed_product_id }}\",\n      \"price\": 59.0,\n      \"currency\": \"USD\"\n    }\n  }\n}"
+      },
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    }
+  ]
+}

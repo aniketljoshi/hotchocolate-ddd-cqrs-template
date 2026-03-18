@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a defect in the template or generated output
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug and the expected behavior.
+      placeholder: The generated project fails during startup because...
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Include commands, GraphQL requests, or setup details.
+      placeholder: |
+        1. dotnet new hc-ddd -n SampleService
+        2. docker compose up -d
+        3. dotnet run --project src/Api
+    validations:
+      required: true
+  - type: input
+    id: dotnet
+    attributes:
+      label: .NET SDK version
+      placeholder: 10.0.103
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or stack traces
+      render: text

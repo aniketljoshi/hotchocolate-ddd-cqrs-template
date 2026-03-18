@@ -28,6 +28,14 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(message => message.Error)
             .HasMaxLength(4000);
 
+        builder.Property(message => message.TraceId)
+            .HasMaxLength(32);
+
+        builder.Property(message => message.SpanId)
+            .HasMaxLength(16);
+
+        builder.Property(message => message.TraceFlags);
+
         builder.HasIndex(message => message.ProcessedOnUtc);
     }
 }
