@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using HotChocolate;
 using HotChocolate.Types;
 using HotChocolateDddCqrsTemplate.Api.GraphQL.Errors;
@@ -6,6 +7,7 @@ using HotChocolateDddCqrsTemplate.Application.Catalog.Queries.GetProductById;
 using HotChocolateDddCqrsTemplate.Application.Catalog.Queries.ListCategories;
 using HotChocolateDddCqrsTemplate.Application.Catalog.Queries.ListProducts;
 using HotChocolateDddCqrsTemplate.Application.Common.Models;
+using HotChocolateDddCqrsTemplate.Application.Common.Observability;
 using MediatR;
 
 namespace HotChocolateDddCqrsTemplate.Api.GraphQL.Queries;
@@ -18,6 +20,12 @@ public sealed class ProductQueries
         [Service] ISender sender,
         CancellationToken cancellationToken)
     {
+        using var activity = TemplateTelemetry.ApiActivitySource.StartActivity(
+            "graphql.query.productById",
+            ActivityKind.Server);
+
+        activity?.SetTag("graphql.product_id", id);
+
         var result = await sender.Send(new GetProductByIdQuery(id), cancellationToken);
 
         if (result.IsError)
@@ -34,6 +42,13 @@ public sealed class ProductQueries
         [Service] ISender sender = default!,
         CancellationToken cancellationToken = default)
     {
+        using var activity = TemplateTelemetry.ApiActivitySource.StartActivity(
+            "graphql.query.products",
+            ActivityKind.Server);
+
+        activity?.SetTag("graphql.page_number", pageNumber);
+        activity?.SetTag("graphql.page_size", pageSize);
+
         return sender.Send(new ListProductsQuery(pageNumber, pageSize), cancellationToken);
     }
 
@@ -41,6 +56,10 @@ public sealed class ProductQueries
         [Service] ISender sender,
         CancellationToken cancellationToken)
     {
+        using var activity = TemplateTelemetry.ApiActivitySource.StartActivity(
+            "graphql.query.categories",
+            ActivityKind.Server);
+
         return sender.Send(new ListCategoriesQuery(), cancellationToken);
     }
 }

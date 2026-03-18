@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using HotChocolateDddCqrsTemplate.Application.Common.Interfaces;
+using HotChocolateDddCqrsTemplate.Application.Common.Observability;
 using MediatR;
 
 namespace HotChocolateDddCqrsTemplate.Application.Common.Behaviors;
@@ -20,6 +22,12 @@ public sealed class DomainEventDispatchBehavior<TRequest, TResponse>(
         {
             return response;
         }
+
+        using var activity = TemplateTelemetry.ApplicationActivitySource.StartActivity(
+            $"{typeof(TRequest).Name}.persist_outbox",
+            ActivityKind.Internal);
+
+        activity?.SetTag("request.type", typeof(TRequest).FullName);
 
         await outboxWriter.AddDomainEventsAsync(cancellationToken);
         await applicationDbContext.SaveChangesAsync(cancellationToken);

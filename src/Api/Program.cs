@@ -8,11 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString =
     builder.Configuration.GetConnectionString("CatalogDb") ??
-    "Host=localhost;Port=5432;Database=hotchocolate_template;Username=postgres;Password=postgres";
+    "Host=localhost;Port=55432;Database=hotchocolate_template;Username=postgres;Password=postgres";
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure(connectionString)
+    .AddInfrastructure(builder.Configuration, connectionString)
     .AddApi();
 
 var app = builder.Build();
