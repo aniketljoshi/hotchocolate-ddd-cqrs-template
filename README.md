@@ -8,12 +8,13 @@ HotChocolate 15 · DDD · CQRS · MediatR · Outbox Pattern · .NET 10 LTS
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/aniketljoshi/hotchocolate-ddd-cqrs-template?style=social)](https://github.com/aniketljoshi/hotchocolate-ddd-cqrs-template)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![NuGet](https://img.shields.io/nuget/dt/AniketJoshi.HotChocolateDdd.Template?label=dotnet%20new%20installs)](https://www.nuget.org/packages/AniketJoshi.HotChocolateDdd.Template)
 
 ---
 
 A production-leaning .NET 10 template for teams building GraphQL backends with HotChocolate, clean architecture, and a reliable domain event pipeline.
 
-> GraphQL is the delivery layer.  
+> GraphQL is the delivery layer.
 > Business logic stays in the application and domain layers.
 
 ---
@@ -24,14 +25,14 @@ Most .NET GraphQL samples are useful for learning but stop short of production a
 
 | Problem | Most samples | This template |
 |---|---|---|
-| HotChocolate version | v13 (2023) | ✅ v15 (2025) |
-| .NET version | 6 or 7 | ✅ 10 LTS |
-| Resolver pattern | Business logic in resolvers | ✅ Thin resolvers → MediatR |
-| Domain events | Implement `INotification` directly | ✅ Pure domain, mapped in Application |
-| Event reliability | Direct publish after SaveChanges | ✅ Outbox Pattern — crash-safe |
-| Architecture tests | Missing | ✅ NetArchTest enforces layers |
-| DataLoader | Missing or incomplete | ✅ Shown with N+1 proof |
-| Field authorization | Missing | ✅ Field-level example included |
+| HotChocolate version | v13 (2023) | v15 (2025) |
+| .NET version | 6 or 7 | 10 LTS |
+| Resolver pattern | Business logic in resolvers | Thin resolvers -> MediatR |
+| Domain events | Implement `INotification` directly | Pure domain, mapped in Application |
+| Event reliability | Direct publish after SaveChanges | Outbox Pattern -- crash-safe |
+| Architecture tests | Missing | NetArchTest enforces layers |
+| DataLoader | Missing or incomplete | Shown with N+1 proof |
+| Field authorization | Missing | Field-level example included |
 
 ---
 
@@ -39,45 +40,45 @@ Most .NET GraphQL samples are useful for learning but stop short of production a
 
 ```
 GraphQL Request
-      │
-      ▼
+      |
+      v
 HotChocolate v15 Resolver
-(thin — sends MediatR command or query, nothing else)
-      │
-      ▼
+(thin -- sends MediatR command or query, nothing else)
+      |
+      v
 MediatR Pipeline
-  ├── LoggingBehavior
-  ├── ValidationBehavior        (FluentValidation)
-  └── DomainEventDispatchBehavior  ← fires AFTER SaveChanges
-      │
-      ▼
+  |-- LoggingBehavior
+  |-- ValidationBehavior        (FluentValidation)
+  '-- DomainEventDispatchBehavior  <-- fires AFTER SaveChanges
+      |
+      v
 Command / Query Handler
-      │
-      ▼
+      |
+      v
 Domain Aggregate Root
 (all business logic lives here)
-      │  raises
-      ▼
+      |  raises
+      v
 IDomainEvent
-(pure C# — zero framework dependencies in Domain layer)
-      │  saved atomically with aggregate
-      ▼
+(pure C# -- zero framework dependencies in Domain layer)
+      |  saved atomically with aggregate
+      v
 Outbox Table
-      │
-      ▼
-Background Processor → INotificationHandler
+      |
+      v
+Background Processor -> INotificationHandler
 ```
 
-See [docs/architecture.md](docs/architecture.md) for full diagrams.
+See [docs/architecture.md](docs/architecture.md) for full Mermaid diagrams.
 
 ---
 
-## The Outbox Pattern — Why It Matters
+## The Outbox Pattern -- Why It Matters
 
 Most templates do this:
 
 ```csharp
-// ❌ SILENT DATA LOSS
+// SILENT DATA LOSS
 // If the app crashes between these two lines, the event is gone forever.
 // No exception. No log entry. Silent.
 await _dbContext.SaveChangesAsync();
@@ -87,7 +88,7 @@ await _messageBus.PublishAsync(new ProductCreatedEvent(product.Id));
 This template does this:
 
 ```csharp
-// ✅ CRASH-SAFE
+// CRASH-SAFE
 // OutboxMessage saves in the SAME database transaction as the aggregate.
 // If the app crashes, the background processor picks it up on restart.
 // Nothing is lost.
@@ -106,14 +107,14 @@ See [docs/outbox-pattern.md](docs/outbox-pattern.md) for the full implementation
 Most templates couple domain events to MediatR:
 
 ```csharp
-// ❌ Domain layer now depends on an external framework
+// Domain layer now depends on an external framework
 public class ProductCreatedEvent : INotification { ... }
 ```
 
 This template keeps the domain pure:
 
 ```csharp
-// ✅ Domain layer has ZERO external dependencies
+// Domain layer has ZERO external dependencies
 public class ProductCreatedEvent : IDomainEvent { ... }
 
 // Application layer maps to INotification before dispatch
@@ -163,6 +164,19 @@ internal sealed class GetProductByIdQueryHandler
 
 ---
 
+## Field-Level Authorization
+
+```csharp
+// Product.CostPrice is only visible to users with the inventory-manager policy.
+// Unauthorized users get null with an AUTH_NOT_AUTHORIZED error extension.
+descriptor.Field(product => product.CostPrice)
+    .Authorize(CatalogAuthorizationPolicies.InventoryManager);
+```
+
+See [docs/authorization.md](docs/authorization.md) for the full walkthrough.
+
+---
+
 ## Quick Start
 
 ```bash
@@ -180,7 +194,7 @@ docker-compose up -d
 dotnet run --project src/Api
 
 # Open GraphQL IDE
-# http://localhost:5000/graphql
+# http://localhost:5159/graphql
 ```
 
 Or clone directly:
@@ -198,23 +212,23 @@ dotnet run --project src/Api
 
 ```
 src/
-├── Domain/          ← Pure C#. Zero external dependencies.
-│                      AggregateRoot, ValueObject, IDomainEvent.
-│
-├── Application/     ← MediatR commands, queries, pipeline behaviors.
-│                      DomainEventDispatchBehavior wires Outbox after SaveChanges.
-│
-├── Infrastructure/  ← EF Core, OutboxProcessor, repositories.
-│                      ApplicationDbContext intercepts SaveChanges → writes OutboxMessage.
-│
-└── Api/             ← HotChocolate v15 resolvers (thin layer only).
+|-- Domain/          <-- Pure C#. Zero external dependencies.
+|                      AggregateRoot, ValueObject, IDomainEvent.
+|
+|-- Application/     <-- MediatR commands, queries, pipeline behaviors.
+|                      DomainEventDispatchBehavior wires Outbox after SaveChanges.
+|
+|-- Infrastructure/  <-- EF Core, OutboxProcessor, repositories.
+|                      ApplicationDbContext intercepts SaveChanges -> writes OutboxMessage.
+|
+'-- Api/             <-- HotChocolate v15 resolvers (thin layer only).
                        Types, Inputs, Payloads, DataLoaders, Authorization.
 
 tests/
-├── Domain.Tests/        ← pure unit tests, zero infrastructure
-├── Application.Tests/   ← handler tests with mocks
-├── Architecture.Tests/  ← NetArchTest enforces layer boundaries
-└── Integration.Tests/   ← full GraphQL request → Postgres via Testcontainers
+|-- Domain.Tests/        <-- pure unit tests, zero infrastructure
+|-- Application.Tests/   <-- handler tests with mocks
+|-- Architecture.Tests/  <-- NetArchTest enforces layer boundaries
+'-- Integration.Tests/   <-- full GraphQL request -> Postgres via Testcontainers
 ```
 
 ---
@@ -223,20 +237,20 @@ tests/
 
 | Feature | Status |
 |---|---|
-| HotChocolate v15 + `QueryContext<T>` | ✅ |
-| .NET 10 LTS | ✅ |
-| MediatR pipeline (validation + logging + domain events) | ✅ |
-| DDD aggregate roots with domain event collection | ✅ |
-| Outbox Pattern (background processor) | ✅ |
-| ErrorOr result pattern — no exceptions as flow control | ✅ |
-| FluentValidation in MediatR pipeline | ✅ |
-| DataLoaders — N+1 problem solved + test proving it | ✅ |
-| Field-level authorization example | ✅ |
-| Architecture tests (NetArchTest) | ✅ |
-| Integration tests (Testcontainers + real Postgres) | ✅ |
-| OpenTelemetry hooks (GraphQL → MediatR → Outbox) | ✅ |
-| `dotnet new` template on NuGet | 🔜 Roadmap |
-| Architecture Decision Records (ADRs) | ✅ |
+| HotChocolate v15 | Done |
+| .NET 10 LTS | Done |
+| MediatR pipeline (validation + logging + domain events) | Done |
+| DDD aggregate roots with domain event collection | Done |
+| Outbox Pattern (background processor) | Done |
+| ErrorOr result pattern -- no exceptions as flow control | Done |
+| FluentValidation in MediatR pipeline | Done |
+| DataLoaders -- N+1 problem solved + test proving it | Done |
+| Field-level authorization example | Done |
+| Architecture tests (NetArchTest) | Done |
+| Integration tests (Testcontainers + real Postgres) | Done |
+| OpenTelemetry hooks (GraphQL -> MediatR -> Outbox) | Done |
+| `dotnet new` template on NuGet | Done |
+| Architecture Decision Records (ADRs) | Done |
 
 ---
 
@@ -244,14 +258,14 @@ tests/
 
 | | **This template** | Conference Planner | Jason Taylor |
 |---|---|---|---|
-| HotChocolate version | **v15** ✅ | v13 ❌ | No GraphQL |
-| .NET version | **10 LTS** ✅ | 6 ❌ | 9 |
-| Outbox Pattern | ✅ | ❌ | ❌ |
-| Pure domain events | ✅ | ❌ | ⚠️ partial |
-| Architecture tests | ✅ | ❌ | ✅ |
-| DataLoader with N+1 test | ✅ | ⚠️ | ❌ |
-| Field authorization | ✅ | ❌ | ❌ |
-| `dotnet new` on NuGet | 🔜 | ❌ | ✅ |
+| HotChocolate version | **v15** | v13 | No GraphQL |
+| .NET version | **10 LTS** | 6 | 9 |
+| Outbox Pattern | Yes | No | No |
+| Pure domain events | Yes | No | Partial |
+| Architecture tests | Yes | No | Yes |
+| DataLoader with N+1 test | Yes | Partial | No |
+| Field authorization | Yes | No | No |
+| `dotnet new` on NuGet | Yes | No | Yes |
 | Last updated | **2025** | 2023 | Active |
 
 ---
@@ -262,7 +276,9 @@ tests/
 - [x] Outbox Pattern
 - [x] Architecture tests
 - [x] Domain events without MediatR dependency
-- [ ] `dotnet new` template packaging on NuGet
+- [x] `dotnet new` template packaging on NuGet
+- [x] Field-level authorization example
+- [x] Architecture Decision Records (ADRs)
 - [ ] Keycloak / OIDC auth sample
 - [ ] Subscriptions backed by domain events
 - [ ] OpenTelemetry full trace with Jaeger screenshot
@@ -282,7 +298,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Author
 
-**Aniket Joshi** — Software Developer | Solution Designer | Software Architect
+**Aniket Joshi** -- Software Developer | Solution Designer | Software Architect
+
 [aniketj.dev](https://aniketj.dev) · [LinkedIn](https://linkedin.com/in/aniketljoshi999) · [GitHub](https://github.com/aniketljoshi)
 
 Built from production experience shipping HotChocolate + DDD at enterprise scale.

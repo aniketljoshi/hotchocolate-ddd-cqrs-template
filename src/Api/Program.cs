@@ -1,4 +1,5 @@
 using HotChocolateDddCqrsTemplate.Api;
+using HotChocolateDddCqrsTemplate.Api.GraphQL.Authorization;
 using HotChocolateDddCqrsTemplate.Application;
 using HotChocolateDddCqrsTemplate.Infrastructure;
 using HotChocolateDddCqrsTemplate.Infrastructure.Persistence;
@@ -10,6 +11,18 @@ var connectionString =
     builder.Configuration.GetConnectionString("CatalogDb") ??
     "Host=localhost;Port=55432;Database=hotchocolate_template;Username=postgres;Password=postgres";
 
+// Authentication & Authorization
+// Replace the default scheme with your identity provider (Keycloak, Azure AD, Auth0, etc.).
+// The template registers a minimal setup so field-level authorization works out of the box.
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization(options =>
+{
+    // Field-level policy: protects Product.CostPrice from unauthorized access.
+    // In production, map this to a real claim/role from your identity provider.
+    options.AddPolicy(CatalogAuthorizationPolicies.InventoryManager, policy =>
+        policy.RequireClaim("role", "inventory-manager"));
+});
+
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration, connectionString)
@@ -18,6 +31,9 @@ builder.Services
 var app = builder.Build();
 
 await InitializeDatabaseAsync(app.Services, app.Configuration);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/", () => Results.Redirect("/graphql"));

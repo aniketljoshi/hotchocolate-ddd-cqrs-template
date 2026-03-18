@@ -5,6 +5,8 @@ public sealed record ProductDto(
     string Name,
     decimal Price,
     string Currency,
+    decimal CostPrice,
+    string CostPriceCurrency,
     string Sku,
     Guid CategoryId,
     bool IsArchived);

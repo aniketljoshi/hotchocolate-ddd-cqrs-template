@@ -1,4 +1,6 @@
+using HotChocolate.Authorization;
 using HotChocolate.Types;
+using HotChocolateDddCqrsTemplate.Api.GraphQL.Authorization;
 using HotChocolateDddCqrsTemplate.Api.GraphQL.DataLoaders;
 using HotChocolateDddCqrsTemplate.Application.Catalog.DTOs;
 
@@ -18,5 +20,13 @@ public sealed class ProductType : ObjectType<ProductDto>
                 var dataLoader = context.DataLoader<CategoryByIdDataLoader>();
                 return await dataLoader.LoadAsync(product.CategoryId, context.RequestAborted);
             });
+
+        // Field-level authorization: costPrice is only visible to inventory managers.
+        // Unauthorized users receive null with an AUTH_NOT_AUTHORIZED error extension.
+        descriptor.Field(product => product.CostPrice)
+            .Authorize(CatalogAuthorizationPolicies.InventoryManager);
+
+        descriptor.Field(product => product.CostPriceCurrency)
+            .Authorize(CatalogAuthorizationPolicies.InventoryManager);
     }
 }

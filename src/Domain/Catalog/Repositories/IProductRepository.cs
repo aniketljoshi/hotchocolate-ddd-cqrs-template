@@ -13,4 +13,6 @@ public interface IProductRepository
     Task<int> CountAsync(CancellationToken cancellationToken);
 
     Task<bool> ExistsBySkuAsync(Sku sku, CancellationToken cancellationToken);
+
+    Task<IReadOnlyDictionary<Guid, Product>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 }

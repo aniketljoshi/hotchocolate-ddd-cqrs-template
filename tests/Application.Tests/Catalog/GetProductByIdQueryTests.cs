@@ -62,5 +62,16 @@ public sealed class GetProductByIdQueryTests
         {
             return Task.FromResult(product?.Sku.Value == sku.Value);
         }
+
+        public Task<IReadOnlyDictionary<Guid, Product>> GetByIdsAsync(
+            IReadOnlyCollection<Guid> ids,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyDictionary<Guid, Product> result = product is not null && ids.Contains(product.Id)
+                ? new Dictionary<Guid, Product> { [product.Id] = product }
+                : new Dictionary<Guid, Product>();
+
+            return Task.FromResult(result);
+        }
     }
 }

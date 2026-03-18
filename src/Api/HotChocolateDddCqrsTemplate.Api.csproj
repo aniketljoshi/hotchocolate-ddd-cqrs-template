@@ -8,5 +8,6 @@
   <ItemGroup>
     <PackageReference Include="ErrorOr" />
     <PackageReference Include="HotChocolate.AspNetCore" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" />
   </ItemGroup>
 </Project>

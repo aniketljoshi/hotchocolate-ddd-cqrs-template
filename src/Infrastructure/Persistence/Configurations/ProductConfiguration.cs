@@ -35,6 +35,19 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
                 .IsRequired();
         });
 
+        builder.OwnsOne(product => product.CostPrice, ownedBuilder =>
+        {
+            ownedBuilder.Property(price => price.Amount)
+                .HasColumnName("cost_price_amount")
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            ownedBuilder.Property(price => price.Currency)
+                .HasColumnName("cost_price_currency")
+                .HasMaxLength(3)
+                .IsRequired();
+        });
+
         builder.OwnsOne(product => product.Sku, ownedBuilder =>
         {
             ownedBuilder.Property(sku => sku.Value)

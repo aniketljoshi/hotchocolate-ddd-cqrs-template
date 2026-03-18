@@ -1,190 +1,227 @@
-{
-  "_type": "export",
-  "__export_format": 4,
-  "__export_date": "2026-03-18T14:30:00.000Z",
-  "__export_source": "codex.desktop",
-  "resources": [
-    {
-      "_id": "wrk_hc_ddd_template",
-      "_type": "workspace",
-      "name": "HotChocolate DDD CQRS Template",
-      "description": "GraphQL requests for the local Docker Compose stack.",
-      "scope": "collection"
-    },
-    {
-      "_id": "env_hc_ddd_template_base",
-      "_type": "environment",
-      "parentId": "wrk_hc_ddd_template",
-      "name": "Base Environment",
-      "data": {
-        "base_url": "http://localhost:5159",
-        "books_category_id": "820b63b4-ec53-4f06-9871-57d9bf14bb51",
-        "courses_category_id": "d8ee54d4-cce8-4948-a0ee-ebea85a34895",
-        "seed_product_id": "4f2bde1d-0f65-488d-bca5-6efc5dd55b0d"
-      }
-    },
-    {
-      "_id": "fld_hc_ddd_template_rest",
-      "_type": "request_group",
-      "parentId": "wrk_hc_ddd_template",
-      "name": "REST Helpers"
-    },
-    {
-      "_id": "fld_hc_ddd_template_queries",
-      "_type": "request_group",
-      "parentId": "wrk_hc_ddd_template",
-      "name": "GraphQL Queries"
-    },
-    {
-      "_id": "fld_hc_ddd_template_mutations",
-      "_type": "request_group",
-      "parentId": "wrk_hc_ddd_template",
-      "name": "GraphQL Mutations"
-    },
-    {
-      "_id": "req_hc_ddd_template_health",
-      "_type": "request",
-      "parentId": "fld_hc_ddd_template_rest",
-      "name": "Health Check",
-      "method": "GET",
-      "url": "{{ _.base_url }}/healthz",
-      "headers": [],
-      "body": {},
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global"
-    },
-    {
-      "_id": "req_hc_ddd_template_sdl",
-      "_type": "request",
-      "parentId": "fld_hc_ddd_template_rest",
-      "name": "GraphQL SDL",
-      "method": "GET",
-      "url": "{{ _.base_url }}/graphql?sdl",
-      "headers": [],
-      "body": {},
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global"
-    },
-    {
-      "_id": "req_hc_ddd_template_categories",
-      "_type": "request",
-      "parentId": "fld_hc_ddd_template_queries",
-      "name": "List Categories",
-      "method": "POST",
-      "url": "{{ _.base_url }}/graphql",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"query\": \"query ListCategories { categories { id name slug } }\"\n}"
-      },
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global"
-    },
-    {
-      "_id": "req_hc_ddd_template_products",
-      "_type": "request",
-      "parentId": "fld_hc_ddd_template_queries",
-      "name": "List Products",
-      "method": "POST",
-      "url": "{{ _.base_url }}/graphql",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"query\": \"query ListProducts($pageNumber: Int!, $pageSize: Int!) { products(pageNumber: $pageNumber, pageSize: $pageSize) { totalCount pageNumber pageSize items { id name price currency sku isArchived category { id name slug } } } }\",\n  \"variables\": {\n    \"pageNumber\": 1,\n    \"pageSize\": 10\n  }\n}"
-      },
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global"
-    },
-    {
-      "_id": "req_hc_ddd_template_product_by_id",
-      "_type": "request",
-      "parentId": "fld_hc_ddd_template_queries",
-      "name": "Get Product By Id",
-      "method": "POST",
-      "url": "{{ _.base_url }}/graphql",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"query\": \"query GetProductById($id: UUID!) { productById(id: $id) { id name price currency sku isArchived category { id name slug } } }\",\n  \"variables\": {\n    \"id\": \"{{ _.seed_product_id }}\"\n  }\n}"
-      },
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global"
-    },
-    {
-      "_id": "req_hc_ddd_template_create_product",
-      "_type": "request",
-      "parentId": "fld_hc_ddd_template_mutations",
-      "name": "Create Product",
-      "method": "POST",
-      "url": "{{ _.base_url }}/graphql",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"query\": \"mutation CreateProduct($input: CreateProductInput!) { createProduct(input: $input) { product { id name price currency sku category { id name slug } } errors { code message } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Telemetry Starter Kit\",\n      \"price\": 149.0,\n      \"currency\": \"USD\",\n      \"sku\": \"TRACE-1001\",\n      \"categoryId\": \"{{ _.books_category_id }}\"\n    }\n  }\n}"
-      },
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global"
-    },
-    {
-      "_id": "req_hc_ddd_template_update_price",
-      "_type": "request",
-      "parentId": "fld_hc_ddd_template_mutations",
-      "name": "Update Product Price",
-      "method": "POST",
-      "url": "{{ _.base_url }}/graphql",
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"query\": \"mutation UpdateProductPrice($input: UpdateProductPriceInput!) { updateProductPrice(input: $input) { product { id name price currency sku category { id name slug } } errors { code message } } }\",\n  \"variables\": {\n    \"input\": {\n      \"productId\": \"{{ _.seed_product_id }}\",\n      \"price\": 59.0,\n      \"currency\": \"USD\"\n    }\n  }\n}"
-      },
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global"
-    }
-  ]
-}
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: HotChocolate DDD CQRS Template
+meta:
+  id: wrk_60aec33a82754a0aae6c203ea10d7154
+  created: 1773831223342
+  modified: 1773831223342
+  description: ""
+collection:
+  - name: REST Helpers
+    meta:
+      id: fld_4f4bd991e5824d6a8298babecee220c9
+      created: 1773831223345
+      modified: 1773831223345
+      sortKey: -1773831223345
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/healthz"
+        name: Health Check
+        meta:
+          id: req_61451683b4f8467084ac15deab30e94e
+          created: 1773831223347
+          modified: 1773831223347
+          isPrivate: false
+          description: ""
+          sortKey: -1773831223347
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/graphql?sdl"
+        name: GraphQL SDL
+        meta:
+          id: req_c93be4503ba2401495d74e7d9c1d4ba9
+          created: 1773831223349
+          modified: 1773831223349
+          isPrivate: false
+          description: ""
+          sortKey: -1773831223349
+        method: GET
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: GraphQL Mutations
+    meta:
+      id: fld_668e622824a74211a6c5130b2bd94cb1
+      created: 1773831223346
+      modified: 1773831223346
+      sortKey: -1773831223346
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/graphql"
+        name: Create Product
+        meta:
+          id: req_924c2ea8934348a9992a9a401d2b6262
+          created: 1773831223352
+          modified: 1773831291886
+          isPrivate: false
+          description: ""
+          sortKey: -1773831223352
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"mutation CreateProduct($input: CreateProductInput!)
+            {\n  createProduct(input: $input) {\n    product
+            {\n      id\n      name\n      price\n      currency\n      sku\n      category
+            {\n        id\n        name\n        slug\n      }\n    }\n    errors
+            {\n      code\n      message\n    }\n  }\n}","operationName":"CreateProduct","variables":{"input":{"name":"Telemetry
+            Starter
+            Kit","price":149,"currency":"USD","sku":"TRACE-1001","categoryId":"{{
+            _.books_category_id }}"}}}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/graphql"
+        name: Update Product Price
+        meta:
+          id: req_b360aab2ad604752817d007a2c7c5fda
+          created: 1773831223353
+          modified: 1773831286222
+          isPrivate: false
+          description: ""
+          sortKey: -1773831223353
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"mutation UpdateProductPrice($input: UpdateProductPriceInput!)
+            {\n  updateProductPrice(input: $input) {\n    product
+            {\n      id\n      name\n      price\n      currency\n      sku\n      category
+            {\n        id\n        name\n        slug\n      }\n    }\n    errors
+            {\n      code\n      message\n    }\n  }\n}","operationName":"UpdateProductPrice","variables":{"input":{"productId":"{{
+            _.seed_product_id }}","price":59,"currency":"USD"}}}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: GraphQL Queries
+    meta:
+      id: fld_89c984437104441f92ec9426c20ffd82
+      created: 1773831223346
+      modified: 1773831223346
+      sortKey: -1773831223346
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/graphql"
+        name: List Categories
+        meta:
+          id: req_84ac04d697ab49f3aa1419e60a77bd1b
+          created: 1773831223350
+          modified: 1773831279780
+          isPrivate: false
+          description: ""
+          sortKey: -1773831223350
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"query ListCategories {\n  categories
+            {\n    id\n    name\n    slug\n  }\n}","operationName":"ListCategories"}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/graphql"
+        name: List Products
+        meta:
+          id: req_28976e7fe1934c4ea04e164903a01deb
+          created: 1773831223351
+          modified: 1773831261286
+          isPrivate: false
+          description: ""
+          sortKey: -1773831223351
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"query ListProducts($pageNumber: Int!, $pageSize: Int!)
+            {\n  products(pageNumber: $pageNumber, pageSize: $pageSize)
+            {\n    totalCount\n    pageNumber\n    pageSize\n    items
+            {\n      id\n      name\n      price\n      currency\n      sku\n      isArchived\n      category
+            {\n        id\n        name\n        slug\n      }\n    }\n  }\n}","operationName":"ListProducts","variables":{"pageNumber":1,"pageSize":10}}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/graphql"
+        name: Get Product By Id
+        meta:
+          id: req_c4351ff2d40a41b288072d844b3955cd
+          created: 1773831223352
+          modified: 1773831270831
+          isPrivate: false
+          description: ""
+          sortKey: -1773831223352
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"query GetProductById($id: UUID!) {\n  productById(id: $id)
+            {\n    id\n    name\n    price\n    currency\n    sku\n    isArchived\n    category
+            {\n      id\n      name\n      slug\n    }\n  }\n}","operationName":"GetProductById","variables":{"id":"{{
+            _.seed_product_id }}"}}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_c244e7abc90c751295eec35a39e77ad264080db5
+    created: 1773831223642
+    modified: 1773831223642
+environments:
+  name: Base Environment
+  meta:
+    id: env_9f9aa011148f4825a007ef7acccbf8a2
+    created: 1773831223344
+    modified: 1773831223344
+    isPrivate: false
+  data:
+    base_url: http://localhost:5159
+    books_category_id: 820b63b4-ec53-4f06-9871-57d9bf14bb51
+    courses_category_id: d8ee54d4-cce8-4948-a0ee-ebea85a34895
+    seed_product_id: 4f2bde1d-0f65-488d-bca5-6efc5dd55b0d

@@ -39,4 +39,14 @@ public sealed class ProductRepository(ApplicationDbContext dbContext) : IProduct
         return dbContext.Products
             .AnyAsync(product => product.Sku.Value == sku.Value, cancellationToken);
     }
+
+    public async Task<IReadOnlyDictionary<Guid, Product>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Products
+            .AsNoTracking()
+            .Where(product => ids.Contains(product.Id))
+            .ToDictionaryAsync(product => product.Id, cancellationToken);
+    }
 }

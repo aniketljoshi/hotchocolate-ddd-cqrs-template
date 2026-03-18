@@ -12,6 +12,8 @@ public static class CatalogMappings
             product.Name,
             product.Price.Amount,
             product.Price.Currency,
+            product.CostPrice.Amount,
+            product.CostPrice.Currency,
             product.Sku.Value,
             product.CategoryId,
             product.IsArchived);

@@ -1,4 +1,5 @@
 using HotChocolate.Types;
+using HotChocolateDddCqrsTemplate.Api.GraphQL.Authorization;
 using HotChocolateDddCqrsTemplate.Api.GraphQL.DataLoaders;
 using HotChocolateDddCqrsTemplate.Api.GraphQL.Errors;
 using HotChocolateDddCqrsTemplate.Api.GraphQL.Mutations;
@@ -21,7 +22,9 @@ public static class DependencyInjection
             .AddType<CategoryType>()
             .AddType<PagedProductResultType>()
             .AddDataLoader<CategoryByIdDataLoader>()
-            .AddErrorFilter<GraphQLErrorFilter>();
+            .AddDataLoader<ProductByIdDataLoader>()
+            .AddErrorFilter<GraphQLErrorFilter>()
+            .AddAuthorization();
 
         return services;
     }

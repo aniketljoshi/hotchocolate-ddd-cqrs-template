@@ -81,6 +81,17 @@ public sealed class CreateProductCommandTests
         {
             return Task.FromResult(ExistingSku?.Value == sku.Value);
         }
+
+        public Task<IReadOnlyDictionary<Guid, Product>> GetByIdsAsync(
+            IReadOnlyCollection<Guid> ids,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyDictionary<Guid, Product> result = AddedProduct is not null && ids.Contains(AddedProduct.Id)
+                ? new Dictionary<Guid, Product> { [AddedProduct.Id] = AddedProduct }
+                : new Dictionary<Guid, Product>();
+
+            return Task.FromResult(result);
+        }
     }
 
     private sealed class InMemoryCategoryRepository : ICategoryRepository
