@@ -32,7 +32,7 @@ jobs:
         run: dotnet test HotChocolateDddCqrsTemplate.sln --configuration Release --no-build
 
       - name: Pack template
-        run: dotnet pack HotChocolateDddCqrsTemplate.TemplatePack.csproj --configuration Release -o artifacts /p:PackageVersion=0.0.0-ci.${{ github.run_number }}
+        run: dotnet pack HotChocolateDddCqrsTemplate.TemplatePack.csproj --configuration Release -o artifacts -p:PackageVersion=0.0.0-ci.${{ github.run_number }}
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v4

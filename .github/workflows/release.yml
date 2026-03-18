@@ -12,7 +12,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   publish-template:
@@ -48,7 +48,7 @@ jobs:
         run: dotnet test HotChocolateDddCqrsTemplate.sln --configuration Release --no-build
 
       - name: Pack template
-        run: dotnet pack HotChocolateDddCqrsTemplate.TemplatePack.csproj --configuration Release -o artifacts /p:PackageVersion=${{ steps.version.outputs.package_version }}
+        run: dotnet pack HotChocolateDddCqrsTemplate.TemplatePack.csproj --configuration Release -o artifacts -p:PackageVersion=${{ steps.version.outputs.package_version }}
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
@@ -56,7 +56,7 @@ jobs:
           name: template-package
           path: artifacts/*.nupkg
 
-      - name: Publish package
+      - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
@@ -69,3 +69,13 @@ jobs:
             --source "https://api.nuget.org/v3/index.json" \
             --api-key "$NUGET_API_KEY" \
             --skip-duplicate
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            artifacts/*.nupkg
