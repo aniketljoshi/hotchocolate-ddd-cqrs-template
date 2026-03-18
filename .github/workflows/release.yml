@@ -1,0 +1,55 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish-template:
+    runs-on: ubuntu-latest
+    environment: release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+
+      - name: Compute package version
+        id: version
+        shell: bash
+        run: echo "package_version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore HotChocolateDddCqrsTemplate.sln
+
+      - name: Build
+        run: dotnet build HotChocolateDddCqrsTemplate.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test HotChocolateDddCqrsTemplate.sln --configuration Release --no-build
+
+      - name: Pack template
+        run: dotnet pack HotChocolateDddCqrsTemplate.TemplatePack.csproj --configuration Release -o artifacts /p:PackageVersion=${{ steps.version.outputs.package_version }}
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-package
+          path: artifacts/*.nupkg
+
+      - name: Authenticate with NuGet.org
+        id: login
+        uses: NuGet/login@v1
+
+      - name: Publish package
+        run: dotnet nuget push "artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
