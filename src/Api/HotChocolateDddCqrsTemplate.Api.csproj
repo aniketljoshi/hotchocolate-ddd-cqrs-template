@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\HotChocolateDddCqrsTemplate.Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\HotChocolateDddCqrsTemplate.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ErrorOr" />
+    <PackageReference Include="HotChocolate.AspNetCore" />
+  </ItemGroup>
+</Project>

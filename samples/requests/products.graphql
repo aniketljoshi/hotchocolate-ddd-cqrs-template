@@ -1,0 +1,38 @@
+query Products {
+  products(pageNumber: 1, pageSize: 10) {
+    totalCount
+    items {
+      id
+      name
+      price
+      currency
+      sku
+      category {
+        id
+        name
+        slug
+      }
+    }
+  }
+}
+
+mutation CreateProduct {
+  createProduct(
+    input: {
+      name: "Sample Product"
+      price: 199.0
+      currency: "USD"
+      sku: "SAMPLE-001"
+      categoryId: "820b63b4-ec53-4f06-9871-57d9bf14bb51"
+    }
+  ) {
+    product {
+      id
+      name
+    }
+    errors {
+      code
+      message
+    }
+  }
+}
