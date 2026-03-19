@@ -2,8 +2,10 @@ using HotChocolateDddCqrsTemplate.Domain.Catalog;
 using HotChocolateDddCqrsTemplate.Domain.Catalog.ValueObjects;
 using HotChocolateDddCqrsTemplate.Infrastructure.Observability;
 using HotChocolateDddCqrsTemplate.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -91,6 +93,18 @@ public sealed class GraphQLTestFixture : IAsyncLifetime
         return await dbContext.Categories.Select(category => category.Id).FirstAsync();
     }
 
+    /// <summary>
+    /// Creates an <see cref="HttpClient"/> that sends the <c>X-Test-Role</c> header
+    /// on every request, causing the test auth handler to authenticate the caller
+    /// with the specified role claim.
+    /// </summary>
+    public HttpClient CreateAuthenticatedClient(string role)
+    {
+        var client = _factory!.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, role);
+        return client;
+    }
+
     private sealed class TestWebApplicationFactory(string connectionString) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -103,6 +117,13 @@ public sealed class GraphQLTestFixture : IAsyncLifetime
                 {
                     ["ConnectionStrings:CatalogDb"] = connectionString
                 });
+            });
+
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddAuthentication(TestAuthHandler.SchemeName)
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                        TestAuthHandler.SchemeName, _ => { });
             });
         }
     }
