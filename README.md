@@ -73,6 +73,17 @@ See [docs/architecture.md](docs/architecture.md) for full Mermaid diagrams.
 
 ---
 
+## End-to-End Trace (OpenTelemetry + Jaeger)
+
+Every request is traced from GraphQL resolver through MediatR to the Outbox processor:
+
+![Jaeger trace showing full request lifecycle](docs/assets/jaeger-trace.png)
+
+Run `docker-compose up -d` to start Jaeger, then open http://localhost:16686 to explore traces.
+See [docs/operations/observability.md](docs/operations/observability.md) for details.
+
+---
+
 ## The Outbox Pattern -- Why It Matters
 
 Most templates do this:
@@ -281,7 +292,7 @@ tests/
 - [x] Architecture Decision Records (ADRs)
 - [ ] Keycloak / OIDC auth sample
 - [ ] Subscriptions backed by domain events
-- [ ] OpenTelemetry full trace with Jaeger screenshot
+- [x] OpenTelemetry full trace with Jaeger screenshot
 - [ ] Second bounded context example
 
 ---
