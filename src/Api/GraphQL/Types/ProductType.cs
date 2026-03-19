@@ -23,10 +23,14 @@ public sealed class ProductType : ObjectType<ProductDto>
 
         // Field-level authorization: costPrice is only visible to inventory managers.
         // Unauthorized users receive null with an AUTH_NOT_AUTHORIZED error extension.
+        // Fields MUST be nullable so that a denied field returns null for just that field,
+        // not the entire parent object (GraphQL null-propagation rule).
         descriptor.Field(product => product.CostPrice)
+            .Type<DecimalType>()
             .Authorize(CatalogAuthorizationPolicies.InventoryManager);
 
         descriptor.Field(product => product.CostPriceCurrency)
+            .Type<StringType>()
             .Authorize(CatalogAuthorizationPolicies.InventoryManager);
     }
 }
